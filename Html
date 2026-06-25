@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencari Negara Misteri Super Lengkap</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 { color: #2c3e50; margin-bottom: 5px; }
+        .subtitle { color: #7f8c8d; margin-top: 0; margin-bottom: 25px; }
+        .setup-section, .game-section, .result-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        button:hover { background-color: #2980b9; }
+        .inputs-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .letter-input {
+            width: 38px;
+            height: 38px;
+            font-size: 18px;
+            text-align: center;
+            text-transform: uppercase;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            font-weight: bold;
+            background-color: #fff;
+        }
+        .letter-input:focus {
+            background-color: #e8f4f8;
+            border-color: #3498db;
+            outline: none;
+        }
+        .result-section { text-align: left; }
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eceff1;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .match-count {
+            background: #2ecc71;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .country-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .country-item {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-left: 4px solid #27ae60;
+            border-radius: 0 4px 4px 0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Global Country Finder 🌍</h1>
+    <p class="subtitle">Database super lengkap (240+ Negara & Teritori)</p>
+
+    <!-- STEP 1: Input Jumlah Huruf -->
+    <div class="setup-section">
+        <label for="charCount" style="font-weight:bold;">Jumlah Huruf Negara: </label>
+        <input type="number" id="charCount" min="2" max="30" value="6">
+        <button onclick="generateInputs()">Buat Kolom</button>
+    </div>
+
+    <!-- STEP 2: Kolom Input Huruf -->
+    <div class="game-section" id="gameSection" style="display:none;">
+        <h3 style="margin-top:0;">Isi Huruf pada Kolom (Spasi Diabaikan):</h3>
+        <div class="inputs-container" id="inputsContainer"></div>
+        <button onclick="resetInputs()" style="background-color: #e74c3c;">Reset Huruf</button>
+    </div>
+
+    <!-- STEP 3: Hasil Pencarian -->
+    <div class="result-section" id="resultSection" style="display:none;">
+        <div class="match-header">
+            <h3 style="margin:0;">Kemungkinan Negara:</h3>
+            <span class="match-count" id="matchCount">0</span>
+        </div>
+        <div class="country-grid" id="countryList"></div>
+    </div>
+
+    <script>
+        // DATABASE 240+ NEGARA DAN WILAYAH (LENGKAP DARI YANG BESAR SAMPAI MIKRO/ANEH)
+        const countries = [
+            "AFGHANISTAN", "AFRIKA SELATAN", "ALBANIA", "ALJAZAIR", "AMERIKA SERIKAT", "ANDORRA", "ANGOLA", "ANGUILLA", "ANTANTIKA", "ANTIGUA BARBUDA", "ARAB SAUDI", "ARGENTINA", "ARMENIA", "ARUBA", "AUSTRALIA", "AUSTRIA", "AZERBAIJAN",
+            "BAHAMAS", "BAHRAIN", "BANGLADESH", "BARBADOS", "BELANDA", "BELARUS", "BELGIA", "BELIZE", "BENIN", "BERMUDA", "BHUTAN", "BOLIVIA", "BONAIRE", "BOSNIA HERZEGOVINA", "BOTSWANA", "BRAZIL", "BRUNEI DARUSSALAM", "BULGARIA", "BURKINA FASO", "BURUNDI",
+            "CHAD", "CHILE", "CHINA", "CURACAO",
+            "DENMARK", "DJIBOUTI", "DOMINIKA",
+            "EKUADOR", "EL SALVADOR", "ERITREA", "ESTONIA", "ESWATINI", "ETIOPIA",
+            "FIJI", "FILIPINA", "FINLANDIA",
+            "GABON", "GAMBIA", "GEORGIA", "GHANA", "GIBRALTAR", "GREENLAND", "GRENADA", "GUADELOUPE", "GUAM", "GUATEMALA", "GUERNSEY", "GUINEA", "GUINEA BISSAU", "GUINEA KHATULISTIWA", "GUYANA", "GUYANA PRANCIS",
+            "HAITI", "HONDURAS", "HONGKONG", "HONGARIA",
+            "INDIA", "INDONESIA", "INGGRIS", "IRAK", "IRAN", "IRLANDIA", "ISLANDIA", "ISRAEL", "ITALIA",
+            "JAMAIKA", "JEPANG", "JERMAN", "JERSEY", "DJIBOUTI", "JORDANIA",
+            "KAMBOJA", "KAMERUN", "KANADA", "KAZAKHSTAN", "KENYA", "KEPULAUAN CAYMAN", "KEPULAUAN COCOS", "KEPULAUAN COOK", "KEPULAUAN FALKLAND", "KEPULAUAN FAROE", "KEPULAUAN FIJI", "KEPULAUAN MARSHALL", "KEPULAUAN MARIANA UTARA", "KEPULAUAN SOLOMON", "KEPULAUAN TURKS CAICOS", "KEPULAUAN VIRGIN BRITANIA", "KEPULAUAN VIRGIN AS", "KIRGISTAN", "KIRIBATI", "KOLOMBIA", "KOMORO", "KONGO", "KOREA UTARA", "KOREA SELATAN", "KOSTA RIKA", "KROASIA", "KUBA", "KUWAIT",
+            "LAOS", "LATVIA", "LEBANON", "LESOTHO", "LIBERIA", "LIBYA", "LIECHTENSTEIN", "LITUANIA", "LUXEMBOURG",
+            "MAKAU", "MADAGASKAR", "MAKEDONIA UTARA", "MALAWI", "MALAYSIA", "MALADEWA", "MALI", "MALTA", "MAROKO", "MARTINIK", "MAURITANIA", "MAURITIUS", "MAYOTTE", "MEKSIKO", "MESIR", "MIKRONESIA", "MOLDOVA", "MONAKO", "MONGOLIA", "MONTENEGRO", "MONTSERRAT", "MOZAMBIK", "MYANMAR",
+            "NAMIBIA", "NAURU", "NEPAL", "NIGER", "NIGERIA", "NIKARAGUA", "NIUE", "NORWEGIA", "KALE DONIA BARU",
+            "OMAN",
+            "PAKISTAN", "PALAU", "PALESTINA", "PANAMA", "PAPUA NUGINI", "PARAGUAY", "PRANCIS", "PERU", "POLANDIA", "PORTUGAL", "PUERTO RIKO",
+            "QATAR",
+            "REUNION", "ROMANIA", "RUSIA", "RWANDA",
+            "SAHARA BARAT", "SAMOA", "SAMOA AMERIKA", "SAN MARINO", "SAO TOME PRINCIPE", "SELANDIA BARU", "SENEGAL", "SERBIA", "SEYCHELLES", "SIERRA LEONE", "SINGAPURA", "SINT MAARTEN", "SIPRUS", "SLOVAKIA", "SLOVENIA", "SOMALIA", "SPANYOL", "SRI LANKA", "SUDAN", "SUDAN SELATAN", "SURINAME", "SVALBARD", "SWEDIA", "SWISS", "SURIA",
+            "TAIWAN", "TAJIKISTAN", "TANZANIA", "THAILAND", "TIMOR LESTE", "TOGO", "TOKELAU", "TONGA", "TRINIDAD TOBAGO", "TUNISIA", "TURKI", "TURKMENISTAN", "TUVALU",
+            "UGANDA", "UKRAINA", "UNI EMIRAT ARAB", "URUGUAY", "UZBEKISTAN",
+            "VANUATU", "VATIKAN", "VENEZUELA", "VIETNAM",
+            "WALLIS FUTUNA",
+            "YAMAN", "YORDANIA", "YUNANI",
+            "ZAMBIA", "ZIMBABWE"
+        ];
+
+        function generateInputs() {
+            const count = parseInt(document.getElementById('charCount').value);
+            const container = document.getElementById('inputsContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.className = 'letter-input';
+                input.dataset.index = i;
+                input.id = 'col-' + i;
+                input.placeholder = (i + 1);
+                
+                // Event ketik langsung saring
+                input.addEventListener('input', function(e) {
+                    // Otomatis pindah kotak ke kanan kalau diisi
+                    if (this.value.length === 1 && i < count - 1) {
+                        document.getElementById('col-' + (i + 1)).focus();
+                    }
+                    filterCountries();
+                });
+
+                // Deteksi tombol backspace untuk mundur kotak
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === "Backspace" && this.value.length === 0 && i > 0) {
+                        document.getElementById('col-' + (i - 1)).focus();
+                    }
+                });
+
+                container.appendChild(input);
+            }
+
+            document.getElementById('gameSection').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'block';
+            filterCountries();
+        }
+
+        function filterCountries() {
+            const count = parseInt(document.getElementById('charCount').value);
+            const inputs = document.querySelectorAll('.letter-input');
+            
+            let pattern = [];
+            inputs.forEach(input => {
+                pattern.push(input.value.toUpperCase() || null);
+            });
+
+            const filtered = countries.filter(country => {
+                // Aturan: Menghitung jumlah huruf ASLI tanpa spasi agar pas dengan kotak game
+                const cleanCountry = country.replace(/\s+/g, ''); 
+                
+                if (cleanCountry.length !== count) return false;
+
+                for (let i = 0; i < count; i++) {
+                    if (pattern[i] !== null && pattern[i] !== "" && cleanCountry[i] !== pattern[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            displayResults(filtered);
+        }
+
+        function displayResults(matches) {
+            const listContainer = document.getElementById('countryList');
+            document.getElementById('matchCount').textContent = matches.length + " ditemukan";
+            listContainer.innerHTML = '';
+
+            if (matches.length === 0) {
+                listContainer.innerHTML = '<p style="color:#e74c3c; font-weight:bold; grid-column: 1/-1; text-align:center;">Tidak ada negara yang cocok dengan kombinasi huruf ini.</p>';
+                return;
+            }
+
+            matches.forEach(country => {
+                const div = document.createElement('div');
+                div.className = 'country-item';
+                div.innerHTML = `📍 ${country}`;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function resetInputs() {
+            const inputs = document.querySelectorAll('.letter-input');
+            inputs.forEach(input => input.value = '');
+            if(inputs.length > 0) inputs[0].focus();
+            filterCountries();
+        }
+    </script>
+</body>
+</html>
